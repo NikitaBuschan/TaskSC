@@ -31,10 +31,7 @@ async Task ReceiveMessageAsync()
         // getting data on the number of sent packages
         if (result.Buffer.Length == 8)
         {
-            Console.WriteLine($"gett: {BitConverter.ToUInt64(result.Buffer, 0)}");
-
             gotPackages = BitConverter.ToInt64(result.Buffer, 0);
-
             continue;
         }
 
@@ -87,101 +84,12 @@ Task ConsoleController()
 
         if (key.Key == ConsoleKey.Enter)
         {
-            var start = DateTime.UtcNow;
-
-            // block write to file
+            // block writing to file
             possibleToWrite = false;
 
-            var packs = gotPackages;
+            var start = DateTime.UtcNow;
 
-            while (true)
-            {
-                if (fileClosed)
-                {
-                    var file = File.Open(filePath, FileMode.Open);
-                    var binaryReader = new BinaryReader(file);
-
-                    long sum = 0;
-                    long numsCount = 0;
-
-                    Dictionary<int, ulong> numsMode = new Dictionary<int, ulong>();
-
-                    // read data from file
-                    while (binaryReader.PeekChar() > -1)
-                    {
-                        int num = binaryReader.ReadInt32();
-
-                        // building dictionary with numbers and count of repeats this num
-                        if (numsMode.TryAdd(num, 1) == false)
-                        {
-                            numsMode[num]++;
-                        }
-
-                        sum += num;
-                        numsCount++;
-                    }
-
-                    // find median
-                    var medianFileCursorPostion = (numsCount / 2 - 1) * sizeof(int);
-
-                    file.Position = medianFileCursorPostion;
-
-                    var median = binaryReader.ReadInt32();
-
-                    // getting average value
-                    var average = sum / numsCount;
-
-                    int modeNumber = 0;
-                    ulong modeCount = 0;
-
-                    double squareSum = 0;
-
-                    // prepair data to calc standard deviation and find mode
-                    Parallel.ForEach(numsMode, num =>
-                    {
-                        var diff = num.Value - (ulong)average;
-
-                        var square = Math.Pow(diff, 2);
-
-                        squareSum += square;
-
-                        // find mode
-                        if (num.Value > modeCount)
-                        {
-                            modeNumber = num.Key;
-                            modeCount = num.Value;
-                        }
-                    });
-
-                    // calc standard deviation
-                    ulong zeros = 0;
-
-                    if (numsMode.TryGetValue(0, out ulong value) == true)
-                    {
-                        zeros = numsMode[0];
-                    }
-
-                    var res = squareSum / (numsCount - (long)zeros) - 1;
-
-                    var deviation = Math.Sqrt(res);
-
-                    Console.WriteLine($"Count: {numsCount}");
-                    Console.WriteLine($"Average: {average}");
-                    Console.WriteLine($"Packs: {packs}");
-                    Console.WriteLine($"Loss: {packs - numsCount}");
-                    Console.WriteLine($"Mod: {modeNumber}");
-                    Console.WriteLine($"Deviation: {deviation}");
-                    Console.WriteLine($"Median: {median}");
-                    Console.WriteLine();
-
-                    file.Close();
-                    binaryReader.Close();
-
-                    possibleToWrite = true;
-                    fileClosed = false;
-                    break;
-                }
-            }
+            CaclData(gotPackages);
 
             Console.WriteLine($"calc time: {DateTime.UtcNow - start}\n\n");
         }
@@ -190,4 +98,105 @@ Task ConsoleController()
             Environment.Exit(0);
         }
     }
+}
+
+void CaclData(long packsCount)
+{
+    while (true)
+    {
+        if (fileClosed)
+        {
+            var file = File.Open(filePath, FileMode.Open);
+            var binaryReader = new BinaryReader(file);
+
+            var packs = packsCount;
+
+            long sum = 0;
+            long numsCount = 0;
+
+            Dictionary<int, ulong> numsMode = new Dictionary<int, ulong>();
+
+            // read data from file
+            while (binaryReader.PeekChar() > -1)
+            {
+                int num = binaryReader.ReadInt32();
+
+                // building dictionary with numbers and count of repeats this num
+                if (numsMode.TryAdd(num, 1) == false)
+                {
+                    numsMode[num]++;
+                }
+
+                sum += num;
+                numsCount++;
+            }
+
+            // find median
+            var medianFileCursorPostion = (numsCount / 2 - 1) * sizeof(int);
+
+            file.Position = medianFileCursorPostion;
+
+            var median = binaryReader.ReadInt32();
+
+            // getting average value
+            var average = sum / numsCount;
+
+            int modeNumber = 0;
+            ulong modeCount = 0;
+
+            double squareSum = 0;
+
+            // prepair data to calc standard deviation and find mode
+            Parallel.ForEach(numsMode, num =>
+            {
+                var diff = num.Value - (ulong)average;
+
+                var square = Math.Pow(diff, 2);
+
+                squareSum += square;
+
+                // find mode
+                if (num.Value > modeCount)
+                {
+                    modeNumber = num.Key;
+                    modeCount = num.Value;
+                }
+            });
+
+            // calc standard deviation
+            ulong zeros = 0;
+
+            if (numsMode.TryGetValue(0, out ulong value) == true)
+            {
+                zeros = value;
+            }
+
+            var res = squareSum / (numsCount - (long)zeros) - 1;
+
+            var deviation = Math.Sqrt(res);
+
+            var loss = packs - numsCount;
+
+            PrintResult(numsCount, average, packs, loss, modeNumber, deviation, median);
+
+            file.Close();
+            binaryReader.Close();
+
+            possibleToWrite = true;
+            fileClosed = false;
+            break;
+        }
+    }
+}
+
+void PrintResult(long numsCount, long average, long packs, long loss, int modeNumber, double deviation, int median)
+{
+    Console.WriteLine($"Count: {numsCount}");
+    Console.WriteLine($"Average: {average}");
+    Console.WriteLine($"Packs: {packs}");
+    Console.WriteLine($"Loss: {packs - numsCount}");
+    Console.WriteLine($"Mod: {modeNumber}");
+    Console.WriteLine($"Deviation: {deviation}");
+    Console.WriteLine($"Median: {median}");
+    Console.WriteLine();
 }

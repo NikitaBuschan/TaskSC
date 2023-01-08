@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Nikita\\Desktop\\t3\\Task\\Server\\Server.csproj": {}
+    "E:\\Folder\\TaskSC\\Task\\Server\\Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Nikita\\Desktop\\t3\\Task\\Server\\Server.csproj": {
+    "E:\\Folder\\TaskSC\\Task\\Server\\Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Nikita\\Desktop\\t3\\Task\\Server\\Server.csproj",
+        "projectUniqueName": "E:\\Folder\\TaskSC\\Task\\Server\\Server.csproj",
         "projectName": "Server",
-        "projectPath": "C:\\Users\\Nikita\\Desktop\\t3\\Task\\Server\\Server.csproj",
+        "projectPath": "E:\\Folder\\TaskSC\\Task\\Server\\Server.csproj",
         "packagesPath": "C:\\Users\\Nikita\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Nikita\\Desktop\\t3\\Task\\Server\\obj\\",
+        "outputPath": "E:\\Folder\\TaskSC\\Task\\Server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",

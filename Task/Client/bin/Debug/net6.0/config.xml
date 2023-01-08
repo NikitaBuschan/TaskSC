@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<server>
+	<range>
+		<from>0</from>
+		<to>100</to>
+	</range>
+	<tasks>1</tasks>
+</server>
