@@ -1,6 +1,27 @@
-﻿using System.Net.Sockets;
+﻿using System.Xml.Linq;
+using System.Net.Sockets;
 
 // Client
+
+XDocument xmlConfig;
+
+try
+{
+    xmlConfig = XDocument.Load("config.xml");
+}
+catch (FileNotFoundException ex)
+{
+    Console.WriteLine(ex.Message + '\n');
+    throw;
+}
+
+XElement? serverConfig = xmlConfig.Element("client");
+
+if (serverConfig == null)
+{
+    Console.WriteLine("client object in config not found");
+    return;
+}
 
 string filePath = "nums.dat";
 
